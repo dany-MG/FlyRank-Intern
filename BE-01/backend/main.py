@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException  
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -9,7 +9,7 @@ tasks = [
 ] 
 
 class Task(BaseModel):
-    id: int | None = None
+    id: int  | None = None
     title: str | None = None
     done : bool = False
 
@@ -49,6 +49,44 @@ async def create_task(task: Task):
     new_task = {"id": t_id, "title": task.title, "done": task.done}
     tasks.append(new_task)
     return new_task
+
+@app.put("/tasks/{id}")
+async def update_task(id:int, task:Task):
+    if task.title is not None and task.title.strip() == "":
+        raise HTTPException(
+            status_code = 400,
+            detail = "Task title is required"
+        )
+    
+    for t in tasks:
+        if t.get("id") == id:
+            if task.title is not None:
+                t["title"] = task.title
+            if task.done is not None:
+                t["done"] = task.done
+            return task
+    
+    raise HTTPException(
+        status_code = 404,
+        detail = f"Task {id} not found"
+    )
+            
+@app.delete("/tasks/{id}")
+async def delete_taks(id:int):
+    for task in tasks:
+        if task.get("id") == id:
+            tasks.remove(task)
+            return Response(status_code=204)
+        
+    raise HTTPException(
+        status_code = 404,
+        detail = f"Task {id} not found"
+    )
+        
+    
+        
+
+
 
     
 
