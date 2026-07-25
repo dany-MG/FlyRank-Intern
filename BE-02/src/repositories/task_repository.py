@@ -1,8 +1,10 @@
+"""
+In memory tasks
 tasks = [
     {"id": 1, "title": "Play LMU", "done": False},
     {"id": 2, "title": "Workout", "done": True},
     {"id": 3, "title": "Walk the puppies", "done": False}
-]
+]"""
 
 class TasksRepository:
     @staticmethod
