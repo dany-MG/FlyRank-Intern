@@ -18,9 +18,7 @@ class TaskService:
     def create_task(task_data: Task):
         if task_data.title is None or task_data.title.strip() == "":
             raise InvalidTaskError("Task title cannot be empty")
-        current_tasks = TasksRepository.get_all_tasks()
-        new_id = max([task["id"] for task in current_tasks], default=0) + 1
-        new_task = {"id": new_id, "title": task_data.title, "done": task_data.done}
+        new_task = {"title" : task_data.title, "done" : 0}
         return TasksRepository.create_task(new_task)
 
     @staticmethod

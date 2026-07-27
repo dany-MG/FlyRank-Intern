@@ -3,6 +3,7 @@ import sqlite3
 con = sqlite3.connect("tasks.db")
 cur = con.cursor()
 cur.execute("CREATE TABLE IF NOT EXISTS tasks (id INTEGER PRIMARY KEY, title TEXT NOT NULL, done BOOLEAN NOT NULL)")
+
 res = cur.execute("SELECT COUNT(*) FROM tasks")
 conteo = res.fetchone()[0]
 

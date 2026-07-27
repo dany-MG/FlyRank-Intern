@@ -30,8 +30,12 @@ class TasksRepository:
 
     @staticmethod
     def create_task(new_task: dict):
-        tasks.append(new_task)
-        return new_task
+        with get_conn() as con:
+            cur = con.cursor()
+            res = cur.execute("INSERT INTO tasks (title, done) VALUES (?, ?)", (new_task["title"], new_task["done"]))
+            con.commit()
+            new_task["id"] = res.lastrowid
+            return new_task
 
     @staticmethod
     def update(task_id: int, updated_data: dict):
