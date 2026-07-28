@@ -8,7 +8,7 @@ tasks = [
 import sqlite3
 
 def get_conn():
-    con = sqlite3.connect("./src/database/tasks.db")
+    con = sqlite3.connect("./tasks.db")
     con.row_factory = sqlite3.Row
     return con
 
