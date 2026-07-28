@@ -39,15 +39,28 @@ class TasksRepository:
 
     @staticmethod
     def update(task_id: int, updated_data: dict):
-        for t in tasks:
-            if t.get("id") == task_id:
-                t.update(updated_data)
-                return t
-        return None
+        with get_conn() as con:
+            cur = con.cursor()
+            cur.execute("SELECT * FROM tasks WHERE id = ?", (task_id,))
+            row = cur.fetchone()
+            if not row:
+                return None
 
+            current_data = dict(row)
+
+            new_title = updated_data.get("title", current_data["title"])
+            new_done = updated_data.get("done", current_data["done"])
+
+            cur.execute("UPDATE tasks SET title = ?, done = ? WHERE id = ?", (new_title, new_done, task_id))
+            con.commit()
+            return {"id": task_id, "title": new_title, "done": new_done}
+            
+        
     @staticmethod
     def delete(task: dict):
-        tasks.remove(task)
+        with get_conn() as con:
+            cur = con.cursor()
+            cur.execute("DELETE FROM tasks WHERE id = ?", (task["id"],))
 
     
 
