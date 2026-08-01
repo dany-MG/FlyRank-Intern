@@ -1,5 +1,4 @@
 import os
-from src.schemas.task_scheme import Task 
 from dotenv import load_dotenv
 import psycopg
 from psycopg.rows import dict_row
