@@ -26,16 +26,15 @@ class TasksRepository:
     def create_task(new_task: dict):
         with get_conn() as con:
             cur = con.cursor()
-            res = cur.execute("INSERT INTO tasks (title, done) VALUES (?, ?)", (new_task["title"], new_task["done"]))
+            cur.execute("INSERT INTO tasks (title, done) VALUES (%s, %s) RETURNING *", (new_task["title"], bool(new_task["done"])))
             con.commit()
-            new_task["id"] = res.lastrowid
-            return new_task
+            return cur.fetchone()
 
     @staticmethod
     def update(task_id: int, updated_data: dict):
         with get_conn() as con:
             cur = con.cursor()
-            cur.execute("SELECT * FROM tasks WHERE id = ?", (task_id,))
+            cur.execute("SELECT id, title, done FROM tasks WHERE id = %s", (task_id,))
             row = cur.fetchone()
             if not row:
                 return None
@@ -43,18 +42,19 @@ class TasksRepository:
             current_data = dict(row)
 
             new_title = updated_data.get("title", current_data["title"])
-            new_done = updated_data.get("done", current_data["done"])
+            new_done = bool(updated_data.get("done", current_data["done"]))
 
-            cur.execute("UPDATE tasks SET title = ?, done = ? WHERE id = ?", (new_title, new_done, task_id))
+            cur.execute("UPDATE tasks SET title = %s, done = %s WHERE id = %s RETURNING *", (new_title, new_done, task_id))
             con.commit()
-            return {"id": task_id, "title": new_title, "done": new_done}
+            return cur.fetchone()
             
         
     @staticmethod
     def delete(task: dict):
         with get_conn() as con:
             cur = con.cursor()
-            cur.execute("DELETE FROM tasks WHERE id = ?", (task["id"],))
-
+            cur.execute("DELETE FROM tasks WHERE id = %s RETURNING *", (task["id"],))
+            con.commit()
+    
     
 
