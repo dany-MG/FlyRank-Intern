@@ -1,22 +1,35 @@
-import sqlite3
+import os
+from src.schemas.task_scheme import Task 
+from dotenv import load_dotenv
+import psycopg
+from psycopg.rows import dict_row
 
-con = sqlite3.connect("tasks.db")
-cur = con.cursor()
-cur.execute("CREATE TABLE IF NOT EXISTS tasks (id INTEGER PRIMARY KEY, title TEXT NOT NULL, done BOOLEAN NOT NULL)")
+load_dotenv()
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-res = cur.execute("SELECT COUNT(*) FROM tasks")
-conteo = res.fetchone()[0]
+def get_conn():
+    return psycopg.connect(DATABASE_URL, row_factory=dict_row)
 
-if conteo == 0:
-    cur.execute("INSERT INTO tasks (title, done) VALUES (\"Play LMU on the sim\", 0)")
-    cur.execute("INSERT INTO tasks (title, done) VALUES (\"Go to the gym\", 0)")
-    cur.execute("INSERT INTO tasks (title, done) VALUES (\"Walk the dog\", 0)")
-    con.commit()
-    print("3 tasks created.")
-else:
-    print(f"The database already contains {conteo} tasks. Insertion was omitted.")
+def init_db():
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute('''
+                CREATE TABLE IF NOT EXISTS tasks (
+                    id SERIAL PRIMARY KEY,
+                    title TEXT NOT NULL,
+                    done BOOLEAN NOT NULL
+                )
+            ''')
 
-res = cur.execute("SELECT id, title, done from tasks")
-print(res.fetchall())
+        cur.execute(
+            '''SELECT COUNT(*) FROM tasks'''
+        )
+        count = cur.fetchone()["count"]
 
-con.close()
+        if count == 0:
+            cur.execute("INSERT INTO tasks (title, done) VALUES (%s, %s)", ("Play LMU on the sim", False))
+            cur.execute("INSERT INTO tasks (title, done) VALUES (%s, %s)", ("Go to the gym", False))
+            cur.execute("INSERT INTO tasks (title, done) VALUES (%s, %s)", ("Walk the dog", False))  
+            conn.commit()
+
+init_db()
