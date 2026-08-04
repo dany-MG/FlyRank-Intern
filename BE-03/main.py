@@ -1,8 +1,7 @@
-from fastapi import FastAPI
-from src.database.supabase import supabase
+import uvicorn
+from src.app import app
 
-app = FastAPI()
+if __name__ == "__main__":
+    uvicorn.run("src.app:app", host="0.0.0.0", port=8000, reload=True)
 
-@app.get("/")
-async def root():
-    return {"message": "Server is running and connected to Supabase"}
+    
