@@ -10,7 +10,7 @@ class AuthService:
         })
 
     @staticmethod
-    def  login(email:EmailStr, password:str):
+    def login(email:EmailStr, password:str):
         return supabase.auth.sign_in_with_password({
             "email": email,
             "password": password
