@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from src.schemas.auth_schema import AuthSchema
 from src.services.auth_service import AuthService
+from src.middleware.auth_bearer import get_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -28,3 +29,14 @@ def login(req: AuthSchema):
         }
     except Exception as e:
         raise HTTPException(status_code =401, detail="Invalid login credentials")
+
+@router.post("/logout", status_code = status.HTTP_204_NO_CONTENT)
+def logout(token: str = Depends(get_token)):
+    try:
+        AuthService.logout(token)
+        return {"message": "Successfully logged out"}
+    except Exception:
+        raise HTTPException(status_code= status.HTTP_400_BAD_REQUEST, detail = "Error loging out or token already invalid")
+
+
+    
