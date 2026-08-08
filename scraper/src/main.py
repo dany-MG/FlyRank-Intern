@@ -1,5 +1,8 @@
 import os
 import time
+import json
+import re
+from datetime import datetime, timezone
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
@@ -8,9 +11,7 @@ CACHE_DIR = "cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 def fetch_html(url):
-    filename = url.split("/")[-1]
-    if not filename.endswith(".html"):
-        filename ="index.html"
+    filename = url.replace("https://", "").replace("/","_")
     cache_file = os.path.join(CACHE_DIR, filename)
 
     if os.path.exists(cache_file):
@@ -58,7 +59,7 @@ def discover_books():
         for article in articles:
             relative_url =  article.h3.a["href"]
             absolute_url = urljoin(current_url, relative_url)
-            discovered_links.append(absolute_url)
+            discovered_links.append({"url": absolute_url, "source" : current_url })
 
         pages_crawled+=1
 
@@ -69,12 +70,63 @@ def discover_books():
         else:
             current_url = None
 
-    unique_links = list(set(discovered_links))
+    unique_books = {}
+    for item in discovered_links:
+        if item["url"] not in unique_books:
+            unique_books[item["url"]] = item["source"]
+    return unique_books
 
-    print(f"catalogue_pages = {pages_crawled}, discovered_books = {len(discovered_links)}, unique_urls = {len(unique_links)}")
-    return unique_links
+def extract_book_details(html, book_url, source_page):
+    soup = BeautifulSoup(html, "html.parser")
+    product_main = soup.find("div", class_="col-sm-6 product_main")
+    title = product_main.h1.text if product_main and product_main.h1 else None
+    price_p = product_main.find("p", class_="price_color") if product_main else None
+    price_text = price_p.text.strip() if price_p else None
+
+    price_gbp = None
+    if price_text:
+        match = re.search(r'\d+\.\d+', price_text)
+        if match:
+            price_gbp = float(match.group())
+
+    availability_p = product_main.find("p", class_="instock availability") if product_main else None
+    availability_text = availability_p.text.strip() if availability_p else None
+
+    rating_p = product_main.find("p", class_="star-rating") if product_main else None
+    rating_text = rating_p["class"][1] if rating_p and len(rating_p["class"]) > 1 else None
+
+    desc_header = soup.find("div", id="product_description")
+    desc_p = desc_header.find_next_sibling("p") if desc_header else None
+    description_text = desc_p.text if desc_p else None
+
+    fetched_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    return{
+        "title" : title,
+        "product_url" : book_url,
+        "price_text" : price_gbp,
+        "availability_text" : availability_text,
+        "rating_text" : rating_text,
+        "description_text" : description_text,
+        "source_page" : source_page,
+        "fetched_at" : fetched_at
+    }
 
 if __name__ == "__main__":
-    discover_books()
+    print("-----Crawling Catalogue------")
+    unique_books = discover_books()
+    print("-----Extracting Book Details------")
+    raw_records = []
 
+    for book_url, source_page in unique_books.items():
+        html, is_cached = fetch_html(book_url)
+        if html:
+            record = extract_book_details(html, book_url, source_page)
+            raw_records.append(record)
+
+    if raw_records:
+        print("\nSample Record:\n")
+        print(json.dumps(raw_records[59], indent=2, ensure_ascii=False))
+
+    print(f"\ndetail_pages = {len(raw_records)}")
         
