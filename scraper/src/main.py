@@ -12,7 +12,7 @@ from pydantic import ValidationError
 CACHE_DIR = "cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
 
-def fetch_html(url):
+def fetch_html(url, retries = 1):
     filename = url.replace("https://", "").replace("/","_")
     cache_file = os.path.join(CACHE_DIR, filename)
 
@@ -26,20 +26,28 @@ def fetch_html(url):
 
     time.sleep(0.5)
 
-    try:
-        res = requests.get(url, headers = headers, timeout = 5)
-        if res.status_code == 200:
-            html_content = res.text
-            with open(cache_file, "w", encoding = "utf-8") as f:
-                f.write(html_content)
-            print(f"FETCH: {len(html_content)} bytes fetched and cached")
-            return html_content, False
-        else:
-            print(f"ERROR: Failed to fetch {url} Status code: {res.status_code}")
-            return None, False
-    except requests.RequestException as e:
-        print(f"Resquest failed for {url}: {e}")
-        return None, False
+    for attempt in range(retries + 1):
+        time.sleep(0.5)
+        try:
+            res = requests.get(url, headers = headers, timeout = 5)
+            if res.status_code == 200:
+                with open(cache_file, "w", encoding = "utf-8") as f:
+                    f.write(res.text)
+                    return res.text, False
+            elif res.status_code in (404, 403):
+                print(f"Request failed for {url}: {res.status_code} {res.reason}. Skipping...")
+                return None, False
+            elif res.status_code >= 500:
+                print(f"Server error for {url}: {res.status_code} {res.reason}. Retrying...")
+                time.sleep(1)
+                continue
+            else:
+                return None, False         
+        except requests.RequestException as e:
+            print(f"Resquest failed for {url}: {e}. Retrying...")
+            time.sleep(1)
+            continue
+    return None, False
 
 def discover_books():
     current_url = "https://books.toscrape.com/catalogue/page-1.html"
@@ -138,22 +146,57 @@ def validate_record(raw_data):
         with open("errors.json", "w", encoding = "utf-8") as f:
             json.dump(bad, f, indent = 2, ensure_ascii = False)
 
-    print(f"\n--- Validation Report ---")
-    print(f"Valid records saved: {len(good)}")
-    if bad:
-        print(f"Invalid records set aside: {len(bad)}")
+    return len(good), len(bad)
 
 if __name__ == "__main__":
+    start_time = time.time()
+    stats = {
+        "pages_fetched": 0,
+        "cache_hits": 0,
+        "failed_pages": 0,
+        "valid_records": 0,
+        "invalid_records": 0
+    }
     print("-----Crawling Catalogue------")
     unique_books = discover_books()
+    unique_books["https://books.toscrape.com/catalogue/fake-book-999/index.html"] = "fake_source"
     print("-----Extracting Book Details------")
     raw_records = []
 
     for book_url, source_page in unique_books.items():
-        html, is_cached = fetch_html(book_url)
-        if html:
-            record = extract_book_details(html, book_url, source_page)
-            raw_records.append(record)
+        try:
+            html, is_cached = fetch_html(book_url)
+            if html:
+                if is_cached:
+                    stats["cache_hits"] += 1
+                else:
+                    stats["pages_fetched"] += 1
+                record = extract_book_details(html, book_url, source_page)
+                raw_records.append(record)
+            else:
+                stats["failed_pages"] += 1
+        except Exception as e:
+            print(f"Unexpected error processing {book_url}: {e}")
+            stats["failed_pages"] += 1
+
+    valid_count, invalid_count = validate_record(raw_records)
+    stats["valid_records"] = valid_count
+    stats["invalid_records"] = invalid_count
+    end_time = time.time()
+
+    report = {
+        "start_time" : datetime.fromtimestamp(start_time, timezone.utc).isoformat(),
+        "end_time" : datetime.fromtimestamp(end_time, timezone.utc).isoformat(),
+        "durations_seconds" : round(end_time - start_time, 2),
+        "pages_fetched" : stats["pages_fetched"],
+        "cache_hits" : stats["cache_hits"],
+        "valid_records" : stats["valid_records"],
+        "invalid_records" : stats["invalid_records"],
+        "failed_pages" : stats["failed_pages"]
+    }
+
+    with open(os.path.join("output", "run-report.json"), "w", encoding = "utf-8") as f:
+        json.dump(report, f, indent = 2, ensure_ascii = False)
 
     if raw_records:
         print("\nSample Record:\n")
@@ -161,5 +204,6 @@ if __name__ == "__main__":
 
     print(f"\ndetail_pages = {len(raw_records)}")
 
-    validate_record(raw_records)
+    print("\n--- Run Report ---")
+    print(json.dumps(report, indent=2))
         
