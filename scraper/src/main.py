@@ -6,6 +6,8 @@ from datetime import datetime, timezone
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+from schema.books_schema import Book
+from pydantic import ValidationError
 
 CACHE_DIR = "cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
@@ -104,13 +106,42 @@ def extract_book_details(html, book_url, source_page):
     return{
         "title" : title,
         "product_url" : book_url,
-        "price_text" : price_gbp,
+        "price_text" : price_text,
+        "price_gbp" : price_gbp,
         "availability_text" : availability_text,
         "rating_text" : rating_text,
         "description_text" : description_text,
         "source_page" : source_page,
         "fetched_at" : fetched_at
     }
+
+def validate_record(raw_data):
+    os.makedirs("output", exist_ok = True)
+
+    good = []
+    bad = []
+
+    for record in raw_data:
+        try:
+            valid_book = Book(**record)
+            good.append(valid_book.model_dump())
+        except ValidationError as e:
+            bad.append({
+                "url" : record.get("product_url" , "unknown"),
+                "reason" : json.loads(e.json())
+            })
+
+    with open(os.path.join("output", "books.json"), "w", encoding = "utf-8") as f:
+        json.dump(good, f, indent = 2, ensure_ascii = False)
+
+    if bad:
+        with open("errors.json", "w", encoding = "utf-8") as f:
+            json.dump(bad, f, indent = 2, ensure_ascii = False)
+
+    print(f"\n--- Validation Report ---")
+    print(f"Valid records saved: {len(good)}")
+    if bad:
+        print(f"Invalid records set aside: {len(bad)}")
 
 if __name__ == "__main__":
     print("-----Crawling Catalogue------")
@@ -129,4 +160,6 @@ if __name__ == "__main__":
         print(json.dumps(raw_records[59], indent=2, ensure_ascii=False))
 
     print(f"\ndetail_pages = {len(raw_records)}")
+
+    validate_record(raw_records)
         
