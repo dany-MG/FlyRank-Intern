@@ -44,6 +44,11 @@ This assignment needed no browser because all the necessary data is fully presen
 ## Ethics Note
 A professional scraper should always use an official API when one exists. Never bypass logins, paywalls, or server blocks, and always collect only the minimum data you actually need for your task.
 
+## Extras Completed
+* **CSV export:** `books.csv` generated successfully. 
+* **Flattening note:** Our Pydantic schema was designed to be flat from the start. However, during the export, Python's `None` values (used when a book lacks a `description` or `rating_text`) were naturally flattened into empty strings by the CSV writer to fit the two-dimensional tabular format.
+
+
 ## Run Report Evidence
 ```json
 {

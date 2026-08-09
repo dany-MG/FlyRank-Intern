@@ -1,9 +1,9 @@
 {
-  "start_time": "2026-08-09T20:46:55.063306+00:00",
-  "end_time": "2026-08-09T20:46:57.121566+00:00",
-  "durations_seconds": 2.06,
-  "pages_fetched": 0,
-  "cache_hits": 60,
+  "start_time": "2026-08-09T21:32:03.164721+00:00",
+  "end_time": "2026-08-09T21:33:45.881014+00:00",
+  "durations_seconds": 102.72,
+  "pages_fetched": 60,
+  "cache_hits": 0,
   "valid_records": 60,
   "invalid_records": 0,
   "failed_pages": 1

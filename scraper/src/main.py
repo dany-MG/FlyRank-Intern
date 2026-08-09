@@ -2,6 +2,7 @@ import os
 import time
 import json
 import re
+import csv
 from datetime import datetime, timezone
 import requests
 from bs4 import BeautifulSoup
@@ -142,6 +143,13 @@ def validate_record(raw_data):
     with open(os.path.join("output", "books.json"), "w", encoding = "utf-8") as f:
         json.dump(good, f, indent = 2, ensure_ascii = False)
 
+    if good:
+        csv_file = os.path.join("output", "books.csv")
+        headers = good[0].keys()
+        with open(csv_file, "w", encoding = "utf-8", newline = "") as f:
+            writer = csv.DictWriter(f, fieldnames = headers)
+            writer.writeheader()
+            writer.writerows(good)
     if bad:
         with open("errors.json", "w", encoding = "utf-8") as f:
             json.dump(bad, f, indent = 2, ensure_ascii = False)
