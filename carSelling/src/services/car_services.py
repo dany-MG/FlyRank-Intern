@@ -91,10 +91,10 @@ async def llm_call(ad: CarAdInput) -> CarAdOutput:
             duration_ms = int((time.time() - start_time) * 1000)
             _log_cost("v1", os.environ["LLM_MODEL"],input_tokens, output_tokens, duration_ms, repairs)
             return CarAdOutput.model_validate_json(cleaned_output_repair)
-        except (json.JSONDecodeError, ValidationError) as e:
+        except (json.JSONDecodeError, ValidationError) as e_final:
             duration_ms = int((time.time() - start_time) * 1000)
             _log_cost("v1", os.environ["LLM_MODEL"],input_tokens, output_tokens, duration_ms, repairs)
-            _log_quarantine(ad.text, raw_output_repair, str(e), prompt_ver="v1")
+            _log_quarantine(ad.text, raw_output_repair, str(e_final), prompt_ver="v1")
             raise HTTPException(
                 status_code = status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail = f"LLM response could not be parsed or validated after repair attempt. Error: {str(e)}"

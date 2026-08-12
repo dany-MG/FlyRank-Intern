@@ -1,0 +1,50 @@
+[
+  {
+    "input": "Selling my 2015 Chevy Camaro SS. It's got the big V8 and an auto gearbox. Runs like a dream.",
+    "expected_brand": "Chevrolet",
+    "expected_transmission": "automatic",
+    "expected_needs_review": false
+  },
+  {
+    "input": "Selling a 2021 Golf GTI, DSG transmission, 2.0 turbo engine. Single owner.",
+    "expected_brand": "Volkswagen",
+    "expected_transmission": "automatic",
+    "expected_needs_review": false
+  },
+  {
+    "input": "Selling my 2018 bimmer m3, runs super fast, inline 6-cylinder engine, manual transmission, taking offers.",
+    "expected_brand": "BMW",
+    "expected_transmission": "manual",
+    "expected_needs_review": false
+  },
+  {
+    "input": "Tesla Model 3 Long Range for sale. Excellent battery health.",
+    "expected_brand": "Tesla",
+    "expected_transmission": "unknown",
+    "expected_needs_review": false
+  },
+  {
+    "input": "Selling my old VW Bug, I think it's a 1995. Runs fine but the reverse gear is acting up.",
+    "expected_brand": "Volkswagen",
+    "expected_transmission": "unknown",
+    "expected_needs_review": false
+  },
+  {
+    "input": "Looking for a reliable family SUV or truck. Must have four doors.",
+    "expected_brand": "unknown",
+    "expected_transmission": "unknown",
+    "expected_needs_review": true
+  },
+  {
+    "input": "Selling my Logitech G923 steering wheel and SIMSONN PLUS X load-cell pedals. Excellent for late braking and trail braking styles. $300 OBO.",
+    "expected_brand": "unknown",
+    "expected_transmission": "unknown",
+    "expected_needs_review": true
+  },
+  {
+    "input": "Selling a Nissan Tsuru, ideal for a taxi. Freshly rebuilt engine.",
+    "expected_brand": "Nissan",
+    "expected_transmission": "unknown",
+    "expected_needs_review": false
+  }
+]
