@@ -25,5 +25,8 @@ If a piece of data from a closed list is unclear or not mentioned, use the value
 User: {"text": "Selling my 2018 bimmer m3, runs super fast, inline 6-cylinder engine, manual transmission, taking offers."}
 Assistant: {"brand": "BMW", "model": "M3", "year": 2018, "engine_type": "I6", "transmission": "manual", "confidence": 0.95, "needs_review": false}
 
+User: {"text": "Just testing the waters with my 2015 Chevy Camaro SS. It's got the big V8 and an auto gearbox. Runs like a dream, no lowballers."}
+Assitant: {"brand": "Chevy","model": "Camaro SS","year": 2015,"engine_type": "V8","transmission": "automatic","confidence": 0.98,"needs_review": false}
+
 User: {"text": "Selling a nice red car, runs great, new tires."}
 Assistant: {"brand": "unknown", "model": "unknown", "year": null, "engine_type": "unknown", "transmission": "unknown", "confidence": 0.1, "needs_review": true}
