@@ -23,7 +23,7 @@ async def llm_call(ad: CarAdInput) -> CarAdOutput:
     client = OpenAI(
         base_url = os.environ["LLM_BASE_URL"],
         api_key = os.environ["LLM_API_KEY"],
-        timeout = 30,
+        timeout = 200,
         max_retries = 2
     )
 
