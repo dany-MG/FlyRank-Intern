@@ -22,6 +22,14 @@ def seed_database():
     product_url TEXT
     )'''
     )
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS reports (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            path TEXT,
+            created_at TEXT
+        )
+    ''')
 
     # Avoiding duplicate entries by clearing the table before seeding
     cursor.execute('''DELETE FROM books''')

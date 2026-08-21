@@ -3,7 +3,7 @@ from datetime import datetime
 from playwright.sync_api import sync_playwright
 from src.database.report import get_report_data
 
-def generate_pdf_report():
+def generate_pdf_report(report_id : int) -> str:
     data = get_report_data()
 
     # Create the HTML content for the PDF
@@ -47,16 +47,16 @@ def generate_pdf_report():
     """
 
     os.makedirs("reports", exist_ok=True)
+    report_path = f"reports/{report_id}.pdf"
 
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
         page.set_content(html_content)
-        page.pdf(path="reports/inventory_report.pdf", format="A4", print_background=True)
+        page.pdf(path=report_path, format="A4", print_background=True)
         browser.close()
     
-    print("PDF report generated successfully at 'reports/inventory_report.pdf'.")
+    print(f"PDF report generated successfully at '{report_path}'.")
+    return report_path
 
-if __name__ == "__main__":
-    generate_pdf_report()
 
