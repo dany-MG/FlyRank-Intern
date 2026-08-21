@@ -92,6 +92,6 @@ loss, disputes, and ruined trust.
 
 ## 6. SCREENSHOT PROOF
 -----------------------------------------------------------------------
-[Screenshot](!pdf_first_page.png)
+![Screenshot](pdf_first_page.png)
 
 =======================================================================
