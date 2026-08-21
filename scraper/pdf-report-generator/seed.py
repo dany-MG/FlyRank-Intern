@@ -5,13 +5,21 @@ def seed_database():
     conn = sqlite3.connect('report.db')
     cursor = conn.cursor()
 
+    rating_map = {
+        "One": 1,
+        "Two": 2,
+        "Three": 3,
+        "Four": 4,
+        "Five": 5
+    }
+
     #Create tables
     cursor.execute('''CREATE TABLE IF NOT EXISTS books (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT,
-    price REAL,
+    price_gbp REAL,
     rating INTEGER,
-    url TEXT
+    product_url TEXT
     )'''
     )
 
@@ -22,8 +30,10 @@ def seed_database():
         books = json.load(f)
 
     for book in books:
-        cursor.execute('''INSERT INTO books (title, price, rating, url) VALUES (?, ?, ?, ?)''',
-                       (book.get('title'), book.get('price'), book.get('rating'), book.get('url')))
+        rating_str = book.get('rating_text')
+        rating_value = rating_map.get(rating_str, 0)  # Default to 0 if not found
+        cursor.execute('''INSERT INTO books (title, price_gbp, rating, product_url) VALUES (?, ?, ?, ?)''',
+                       (book.get('title'), book.get('price_gbp'), rating_value, book.get('product_url')))
     
     conn.commit()
 
