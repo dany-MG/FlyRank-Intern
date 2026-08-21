@@ -30,13 +30,19 @@ def get_report_data():
     ''')
     count_per_rating = [dict(row) for row in cursor.fetchall()]
 
+    cursor.execute('''
+        SELECT title, price_gbp FROM books
+    ''')
+    all_books = [dict(row) for row in cursor.fetchall()]
+
     conn.close()
 
     return {
         "total_books": total_books,
         "average_price": average_price,
         "top_5_expensive": top_5_expensive,
-        "books_per_rating": count_per_rating
+        "books_per_rating": count_per_rating,
+        "all_books": all_books
     }
 
 if __name__ == "__main__":
