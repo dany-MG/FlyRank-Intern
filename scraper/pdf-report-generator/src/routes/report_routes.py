@@ -2,12 +2,13 @@ from fastapi import APIRouter, status, HTTPException
 from src.database.create_reports import create_report
 from src.database.get_report_by_id import get_report_by_id, get_report_path
 from fastapi.responses import FileResponse
+from src.models.report_models import ReportRequest
 
 router = APIRouter(tags=["Report Routes"])
 
 @router.post("/reports", status_code = status.HTTP_201_CREATED)
-def generate_report():
-    report = create_report()
+def generate_report(req: ReportRequest = ReportRequest()):
+    report = create_report(req)
     return report
 
 @router.get("/reports/{report_id}")
